@@ -8,7 +8,12 @@ import pytest
 from typer.testing import CliRunner
 
 from vibesearch import cli
-from vibesearch.api_client import APIError, APIRateLimited, APISchemaError, APIStatusError
+from vibesearch.api_client import (
+    APIError,
+    APIRateLimited,
+    APISchemaError,
+    APIStatusError,
+)
 from vibesearch.api_models import GalleryDetail, GalleryListResponse
 from vibesearch.catalog import Catalog
 from vibesearch.config import Settings
@@ -16,10 +21,41 @@ from vibesearch.config import Settings
 runner = CliRunner()
 
 
+def test_v2_filter_suggest_and_busy_lock(configured, monkeypatch):
+    from vibesearch.locking import data_lock
+
+    raw = {
+        "id": 7,
+        "media_id": "7",
+        "title": {"english": "Quiet", "pretty": "Quiet"},
+        "tags": [{"id": 12, "type": "tag", "name": "cozy"}],
+        "num_pages": 8,
+        "upload_date": 100,
+    }
+    with Catalog(configured.catalog_path) as catalog:
+        catalog.save_detail(GalleryDetail.model_validate(raw), raw)
+    monkeypatch.setattr(cli, "LocalSentenceTransformer", forbidden)
+    found = runner.invoke(
+        cli.app,
+        ["filter", "--filters", '{"tags_any":["cozy"]}', "--display", "id-only"],
+    )
+    assert found.exit_code == 0, found.output
+    assert '"gallery_id": 7' in found.output and "Quiet" not in found.output
+    suggested = runner.invoke(cli.app, ["suggest", "tag", "co"])
+    assert suggested.exit_code == 0 and "cozy" in suggested.output
+    with data_lock(configured.data_dir):
+        busy = runner.invoke(cli.app, ["status"])
+        assert busy.exit_code == 8 and "busy" in busy.output
+
+
 @pytest.fixture
 def configured(monkeypatch, tmp_path):
-    settings = Settings(_env_file=None, data_dir=tmp_path, user_agent_contact="operator@example.invalid",
-                        api_key="private-test-token")
+    settings = Settings(
+        _env_file=None,
+        data_dir=tmp_path,
+        user_agent_contact="operator@example.invalid",
+        api_key="private-test-token",
+    )
     monkeypatch.setattr(cli, "Settings", lambda: settings)
     return settings
 
@@ -56,17 +92,31 @@ def test_collect_bounds_rates_and_never_loads_model(configured, monkeypatch):
             observed.update(kwargs)
 
         async def collect(self):
-            return SimpleNamespace(run_id="sample", status="completed", pages_scanned=1,
-                                   scanned=2, deduplicated=0, fetched=2, skipped=0,
-                                   inaccessible=0, pending=0)
+            return SimpleNamespace(
+                run_id="sample",
+                status="completed",
+                pages_scanned=1,
+                scanned=2,
+                deduplicated=0,
+                fetched=2,
+                skipped=0,
+                inaccessible=0,
+                pending=0,
+            )
 
     monkeypatch.setattr(cli, "MetadataClient", FakeClient)
     monkeypatch.setattr(cli, "Collector", FakeCollector)
     monkeypatch.setattr(cli, "LocalSentenceTransformer", forbidden)
-    result = runner.invoke(cli.app, ["collect", "--max-items", "2", "--max-pages", "1", "--per-page", "3"])
+    result = runner.invoke(
+        cli.app, ["collect", "--max-items", "2", "--max-pages", "1", "--per-page", "3"]
+    )
     assert result.exit_code == 0, result.output
     assert "fetched=2" in result.output
-    assert (observed["max_items"], observed["max_pages"], observed["per_page"]) == (2, 1, 3)
+    assert (observed["max_items"], observed["max_pages"], observed["per_page"]) == (
+        2,
+        1,
+        3,
+    )
     assert observed["list_per_minute"] == configured.list_rate_authenticated
     assert observed["detail_per_minute"] == configured.detail_rate_authenticated
     assert observed["api_key"] == "private-test-token"
@@ -75,8 +125,11 @@ def test_collect_bounds_rates_and_never_loads_model(configured, monkeypatch):
 
 
 def test_collect_requires_contact_before_network(monkeypatch, tmp_path):
-    monkeypatch.setattr(cli, "Settings", lambda: Settings(_env_file=None, data_dir=tmp_path,
-                                                            user_agent_contact=""))
+    monkeypatch.setattr(
+        cli,
+        "Settings",
+        lambda: Settings(_env_file=None, data_dir=tmp_path, user_agent_contact=""),
+    )
     monkeypatch.setattr(cli, "MetadataClient", forbidden)
     result = runner.invoke(cli.app, ["collect"])
     assert result.exit_code == 2
@@ -84,10 +137,14 @@ def test_collect_requires_contact_before_network(monkeypatch, tmp_path):
 
 
 @pytest.mark.parametrize("command", ["index", "reindex"])
-def test_index_commands_use_local_contract_without_api(configured, monkeypatch, command):
+def test_index_commands_use_local_contract_without_api(
+    configured, monkeypatch, command
+):
     seen = {}
     monkeypatch.setattr(cli, "MetadataClient", forbidden)
-    monkeypatch.setattr(cli, "LocalSentenceTransformer", lambda **kw: seen.update(kw) or object())
+    monkeypatch.setattr(
+        cli, "LocalSentenceTransformer", lambda **kw: seen.update(kw) or object()
+    )
 
     class FakeIndexer:
         def __init__(self, catalog, provider, path, **kw):
@@ -97,7 +154,9 @@ def test_index_commands_use_local_contract_without_api(configured, monkeypatch, 
             assert kw["template_version"] == configured.text_template_version
 
         def run(self):
-            return SimpleNamespace(fingerprint="abcdef0123456789", indexed=3, skipped=2, deleted=1)
+            return SimpleNamespace(
+                fingerprint="abcdef0123456789", indexed=3, skipped=2, deleted=1
+            )
 
     monkeypatch.setattr(cli, "Indexer", FakeIndexer)
     result = runner.invoke(cli.app, [command])
@@ -114,7 +173,11 @@ def test_index_commands_use_local_contract_without_api(configured, monkeypatch, 
 def test_search_offline_display_and_pending_warning(configured, monkeypatch):
     seen = {}
     monkeypatch.setattr(cli, "MetadataClient", forbidden)
-    monkeypatch.setattr(cli, "LocalSentenceTransformer", lambda **kw: seen.update(provider=kw) or object())
+    monkeypatch.setattr(
+        cli,
+        "LocalSentenceTransformer",
+        lambda **kw: seen.update(provider=kw) or object(),
+    )
 
     class FakeSearch:
         def __init__(self, catalog, provider, path, **kwargs):
@@ -123,9 +186,20 @@ def test_search_offline_display_and_pending_warning(configured, monkeypatch):
 
         def search(self, query, **kwargs):
             seen.update(query=query, **kwargs)
-            return SimpleNamespace(indexed_count=8, missing_count=2, pending_warning=True, hits=(
-                SimpleNamespace(gallery_id=7, num_pages=13, cosine_distance=0.25,
-                                title_display="A sample title", tags=({"name": "quiet"},)),))
+            return SimpleNamespace(
+                indexed_count=8,
+                missing_count=2,
+                pending_warning=True,
+                hits=(
+                    SimpleNamespace(
+                        gallery_id=7,
+                        num_pages=13,
+                        cosine_distance=0.25,
+                        title_display="A sample title",
+                        tags=({"name": "quiet"},),
+                    ),
+                ),
+            )
 
     monkeypatch.setattr(cli, "SearchService", FakeSearch)
     full = runner.invoke(cli.app, ["search", "gentle atmosphere", "--top-k", "2"])
@@ -135,13 +209,22 @@ def test_search_offline_display_and_pending_warning(configured, monkeypatch):
     assert "pending indexing" in full.output
     assert "2 eligible local records" in full.output
     assert seen["provider"]["offline"] is True
-    assert {k: seen[k] for k in ("query", "top_k", "display")} == {"query": "gentle atmosphere", "top_k": 2, "display": "full"}
-    brief = runner.invoke(cli.app, ["search", "gentle atmosphere", "--display", "id-only"])
+    assert {k: seen[k] for k in ("query", "top_k", "display")} == {
+        "query": "gentle atmosphere",
+        "top_k": 2,
+        "display": "full",
+    }
+    brief = runner.invoke(
+        cli.app, ["search", "gentle atmosphere", "--display", "id-only"]
+    )
     assert brief.exit_code == 0, brief.output
     assert "A sample title" not in brief.output and "quiet" not in brief.output
     assert "7  pages=13" in brief.output
     assert runner.invoke(cli.app, ["search", " "]).exit_code == 2
-    assert runner.invoke(cli.app, ["search", "query", "--display", "unknown"]).exit_code == 2
+    assert (
+        runner.invoke(cli.app, ["search", "query", "--display", "unknown"]).exit_code
+        == 2
+    )
 
 
 def test_status_is_local_no_model_and_no_secret(configured, monkeypatch):
@@ -154,9 +237,16 @@ def test_status_is_local_no_model_and_no_secret(configured, monkeypatch):
         catalog.queue_candidate(9)
         catalog.record_error(9, "schema")
         run_id = catalog.start_run()
-        catalog.db.execute("CREATE TABLE index_manifests (fingerprint TEXT PRIMARY KEY, manifest_json TEXT NOT NULL)")
-        catalog.db.execute("INSERT INTO index_manifests VALUES (?, ?)",
-                           ("abcdef0123456789", '{"model_id":"local-model","revision":"rev1","template_version":"gallery-text-v1"}'))
+        catalog.db.execute(
+            "CREATE TABLE index_manifests (fingerprint TEXT PRIMARY KEY, manifest_json TEXT NOT NULL)"
+        )
+        catalog.db.execute(
+            "INSERT INTO index_manifests VALUES (?, ?)",
+            (
+                "abcdef0123456789",
+                '{"model_id":"local-model","revision":"rev1","template_version":"gallery-text-v1"}',
+            ),
+        )
         catalog.db.commit()
     result = runner.invoke(cli.app, ["status"])
     assert result.exit_code == 0, result.output
@@ -165,16 +255,21 @@ def test_status_is_local_no_model_and_no_secret(configured, monkeypatch):
     assert "private-test-token" not in result.output
 
 
-@pytest.mark.parametrize(("exception", "code", "message"), [
-    (APIStatusError(401), 3, "authentication"),
-    (APIStatusError(503), 4, "unavailable"),
-    (APIRateLimited(), 4, "rate limit"),
-    (APISchemaError("sensitive-payload"), 5, "schema mismatch"),
-    (APIError("sensitive-token"), 4, "unavailable"),
-    (LookupError("private-path"), 6, "No compatible local index"),
-    (RuntimeError("private-path"), 7, "Operation failed"),
-])
-def test_errors_are_actionable_redacted_and_nonzero(configured, monkeypatch, exception, code, message):
+@pytest.mark.parametrize(
+    ("exception", "code", "message"),
+    [
+        (APIStatusError(401), 3, "authentication"),
+        (APIStatusError(503), 4, "unavailable"),
+        (APIRateLimited(), 4, "rate limit"),
+        (APISchemaError("sensitive-payload"), 5, "schema mismatch"),
+        (APIError("sensitive-token"), 4, "unavailable"),
+        (LookupError("private-path"), 6, "No compatible local index"),
+        (RuntimeError("private-path"), 7, "Operation failed"),
+    ],
+)
+def test_errors_are_actionable_redacted_and_nonzero(
+    configured, monkeypatch, exception, code, message
+):
     def failing(*_, **__):
         raise exception
 
@@ -188,6 +283,7 @@ def test_errors_are_actionable_redacted_and_nonzero(configured, monkeypatch, exc
 
 def test_collect_index_search_reindex_real_local_pipeline(configured, monkeypatch):
     """Exercise the real collector, catalog, indexer, and search with fake boundaries."""
+
     class FakeClient:
         def __init__(self, **_):
             pass
@@ -200,15 +296,30 @@ def test_collect_index_search_reindex_real_local_pipeline(configured, monkeypatc
 
         async def list_galleries(self, page, per_page):
             assert page == 1
-            return GalleryListResponse.model_validate({"result": [
-                {"id": 7, "media_id": "7", "english_title": "Quiet path", "num_pages": 8},
-            ], "num_pages": 1, "per_page": per_page})
+            return GalleryListResponse.model_validate(
+                {
+                    "result": [
+                        {
+                            "id": 7,
+                            "media_id": "7",
+                            "english_title": "Quiet path",
+                            "num_pages": 8,
+                        },
+                    ],
+                    "num_pages": 1,
+                    "per_page": per_page,
+                }
+            )
 
         async def get_detail(self, gallery_id):
-            raw = {"id": gallery_id, "media_id": str(gallery_id),
-                   "title": {"english": "Quiet path", "pretty": "Quiet path"},
-                   "tags": [{"id": 12, "type": "tag", "name": "cozy"}],
-                   "num_pages": 8, "upload_date": 100}
+            raw = {
+                "id": gallery_id,
+                "media_id": str(gallery_id),
+                "title": {"english": "Quiet path", "pretty": "Quiet path"},
+                "tags": [{"id": 12, "type": "tag", "name": "cozy"}],
+                "num_pages": 8,
+                "upload_date": 100,
+            }
             return GalleryDetail.model_validate(raw), raw
 
     class FakeProvider:
@@ -230,7 +341,9 @@ def test_collect_index_search_reindex_real_local_pipeline(configured, monkeypatc
     monkeypatch.setattr(cli, "LocalSentenceTransformer", lambda **_: FakeProvider())
     missing = runner.invoke(cli.app, ["search", "quiet"])
     assert missing.exit_code == 6 and "No compatible local index" in missing.output
-    collected = runner.invoke(cli.app, ["collect", "--max-items", "1", "--max-pages", "1"])
+    collected = runner.invoke(
+        cli.app, ["collect", "--max-items", "1", "--max-pages", "1"]
+    )
     assert collected.exit_code == 0, collected.output
     assert "fetched=1" in collected.output
     indexed = runner.invoke(cli.app, ["index"])

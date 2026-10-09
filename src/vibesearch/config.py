@@ -13,8 +13,10 @@ class Settings(BaseSettings):
     """Settings loaded from the environment and a local optional .env file."""
 
     model_config = SettingsConfigDict(
-        env_prefix="VIBESEARCH_", env_file=str(PROJECT_ROOT / ".env"),
-        extra="ignore", case_sensitive=False,
+        env_prefix="VIBESEARCH_",
+        env_file=str(PROJECT_ROOT / ".env"),
+        extra="ignore",
+        case_sensitive=False,
     )
 
     api_origin: str = "https://nhentai.net"
@@ -38,6 +40,16 @@ class Settings(BaseSettings):
     embedding_normalize: bool = True
     text_template_version: str = "gallery-text-v1"
     display_mode: Literal["full", "id-only"] = "full"
+    web_host: str = "127.0.0.1"
+    web_port: int = Field(default=8000, ge=1, le=65535)
+    allow_non_loopback: bool = False
+    embed_queue_size: int = Field(default=8, ge=1, le=64)
+    embed_queue_timeout_s: float = Field(default=30.0, gt=0, le=300)
+    image_cache_max_mb: int = Field(default=512, ge=15, le=4096)
+    image_cache_ttl_hours: float = Field(default=24.0, gt=0, le=168)
+    refresh_max_items_default: int = Field(default=50, ge=1, le=100)
+    title_translator: Literal["none"] = "none"
+    page_translator: Literal["none"] = "none"
 
     @field_validator("api_origin")
     @classmethod

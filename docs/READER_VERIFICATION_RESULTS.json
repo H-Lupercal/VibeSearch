@@ -1,0 +1,232 @@
+{
+  "checked_at_utc": "2026-10-09T17:37:04.552949+00:00",
+  "openapi_version": "2.0.0+3ef54aa",
+  "gallery_ids": [
+    686333,
+    686332,
+    686331,
+    686330,
+    686329
+  ],
+  "gallery_results": [
+    {
+      "gallery_id": 686333,
+      "detail_status": 200,
+      "media_id": "4227024",
+      "num_pages": 21,
+      "page_count": 21,
+      "descriptors_valid": true,
+      "first_page": {
+        "number": 1,
+        "path": "galleries/4227024/1.webp",
+        "width": 1063,
+        "height": 1500,
+        "thumbnail": "galleries/4227024/1t.webp",
+        "thumbnail_width": 200,
+        "thumbnail_height": 282
+      },
+      "image": {
+        "url": "https://i1.nhentai.net/galleries/4227024/1.webp",
+        "host": "i1.nhentai.net",
+        "method": "GET",
+        "status": 200,
+        "content_type": "image/webp",
+        "location": null,
+        "bytes": 511988,
+        "sha256": "c854afbd9c5c7b8770ee09fb0422aec46484c5e3a170f90f478ccd4a99bf487b",
+        "signature": {
+          "format": "webp",
+          "width": 1063,
+          "height": 1500
+        }
+      }
+    },
+    {
+      "gallery_id": 686332,
+      "detail_status": 200,
+      "media_id": "4227005",
+      "num_pages": 30,
+      "page_count": 30,
+      "descriptors_valid": true,
+      "first_page": {
+        "number": 1,
+        "path": "galleries/4227005/1.webp",
+        "width": 1280,
+        "height": 1808,
+        "thumbnail": "galleries/4227005/1t.webp",
+        "thumbnail_width": 200,
+        "thumbnail_height": 282
+      },
+      "image": {
+        "url": "https://i1.nhentai.net/galleries/4227005/1.webp",
+        "host": "i1.nhentai.net",
+        "method": "GET",
+        "status": 200,
+        "content_type": "image/webp",
+        "location": null,
+        "bytes": 238988,
+        "sha256": "32e6da4c82760ac9175009e7fd2f406a77c89b4196b19fd4ba091b560d8be5a3",
+        "signature": {
+          "format": "webp",
+          "width": 1280,
+          "height": 1808
+        }
+      }
+    },
+    {
+      "gallery_id": 686331,
+      "detail_status": 200,
+      "media_id": "4226996",
+      "num_pages": 39,
+      "page_count": 39,
+      "descriptors_valid": true,
+      "first_page": {
+        "number": 1,
+        "path": "galleries/4226996/1.webp",
+        "width": 1280,
+        "height": 1808,
+        "thumbnail": "galleries/4226996/1t.webp",
+        "thumbnail_width": 200,
+        "thumbnail_height": 282
+      },
+      "image": {
+        "url": "https://i1.nhentai.net/galleries/4226996/1.webp",
+        "host": "i1.nhentai.net",
+        "method": "GET",
+        "status": 200,
+        "content_type": "image/webp",
+        "location": null,
+        "bytes": 437490,
+        "sha256": "60fd83cf5262b01db42d57bb0165f1d7c62c7dd073c6f2675125126162d657c0",
+        "signature": {
+          "format": "webp",
+          "width": 1280,
+          "height": 1808
+        }
+      }
+    },
+    {
+      "gallery_id": 686330,
+      "detail_status": 200,
+      "media_id": "4226989",
+      "num_pages": 56,
+      "page_count": 56,
+      "descriptors_valid": true,
+      "first_page": {
+        "number": 1,
+        "path": "galleries/4226989/1.webp",
+        "width": 1280,
+        "height": 1807,
+        "thumbnail": "galleries/4226989/1t.webp",
+        "thumbnail_width": 200,
+        "thumbnail_height": 282
+      },
+      "image": {
+        "url": "https://i1.nhentai.net/galleries/4226989/1.webp",
+        "host": "i1.nhentai.net",
+        "method": "GET",
+        "status": 200,
+        "content_type": "image/webp",
+        "location": null,
+        "bytes": 309018,
+        "sha256": "9b697986debef9412e833e30e85f734a0caa3f4a931b27bfa94dae294943fd2e",
+        "signature": {
+          "format": "webp",
+          "width": 1280,
+          "height": 1807
+        }
+      }
+    },
+    {
+      "gallery_id": 686329,
+      "detail_status": 200,
+      "media_id": "4226979",
+      "num_pages": 218,
+      "page_count": 218,
+      "descriptors_valid": true,
+      "first_page": {
+        "number": 1,
+        "path": "galleries/4226979/1.jpg",
+        "width": 1055,
+        "height": 1500,
+        "thumbnail": "galleries/4226979/1t.jpg.webp",
+        "thumbnail_width": 200,
+        "thumbnail_height": 284
+      },
+      "image": {
+        "url": "https://i1.nhentai.net/galleries/4226979/1.jpg",
+        "host": "i1.nhentai.net",
+        "method": "GET",
+        "status": 200,
+        "content_type": "image/jpeg",
+        "location": null,
+        "bytes": 421730,
+        "sha256": "30f4f687c01423922fbc86b460c9ddf26c57fe663e441689c5707ce0d8f4144d",
+        "signature": {
+          "format": "jpeg"
+        }
+      }
+    }
+  ],
+  "host_sweep": [
+    {
+      "url": "https://i2.nhentai.net/galleries/4227024/1.webp",
+      "host": "i2.nhentai.net",
+      "method": "GET",
+      "status": 200,
+      "content_type": "image/webp",
+      "location": null,
+      "bytes": 511988,
+      "sha256": "c854afbd9c5c7b8770ee09fb0422aec46484c5e3a170f90f478ccd4a99bf487b",
+      "signature": {
+        "format": "webp",
+        "width": 1063,
+        "height": 1500
+      }
+    },
+    {
+      "url": "https://i3.nhentai.net/galleries/4227024/1.webp",
+      "host": "i3.nhentai.net",
+      "method": "GET",
+      "status": 200,
+      "content_type": "image/webp",
+      "location": null,
+      "bytes": 511988,
+      "sha256": "c854afbd9c5c7b8770ee09fb0422aec46484c5e3a170f90f478ccd4a99bf487b",
+      "signature": {
+        "format": "webp",
+        "width": 1063,
+        "height": 1500
+      }
+    },
+    {
+      "url": "https://i4.nhentai.net/galleries/4227024/1.webp",
+      "host": "i4.nhentai.net",
+      "method": "GET",
+      "status": 200,
+      "content_type": "image/webp",
+      "location": null,
+      "bytes": 511988,
+      "sha256": "c854afbd9c5c7b8770ee09fb0422aec46484c5e3a170f90f478ccd4a99bf487b",
+      "signature": {
+        "format": "webp",
+        "width": 1063,
+        "height": 1500
+      }
+    }
+  ],
+  "credential_forwarding": false,
+  "list_schema_properties": [
+    "blacklisted",
+    "english_title",
+    "id",
+    "japanese_title",
+    "media_id",
+    "num_favorites",
+    "num_pages",
+    "tag_ids",
+    "thumbnail",
+    "thumbnail_height",
+    "thumbnail_width"
+  ]
+}
